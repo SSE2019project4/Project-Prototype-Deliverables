@@ -20,7 +20,7 @@ received = ''
 
 while received != '-1':										#while connection is still alive							
 	s.sendall(str(raw_input()))							#construct message and send to server					
-	subprocess.call(["clear"])							#clear terminal display		
+	#subprocess.call(["clear"])							#clear terminal display		
 	received = s.recv(1024)									#wait for server response
 
 	if received.find('ballot') != -1:					#request ballot found, print ballot as client, send candidate list to server. 
@@ -29,11 +29,12 @@ while received != '-1':										#while connection is still alive
 				print(lines[:-1])
 		continue
 
-	elif received.find('-1') == -1:	 #if response is not to break connection, print
-		print(received)
+	elif received.find('-1') != -1:	 					#if response is not to break connection, print
+		print("\033[1;31;40mExiting\033[1;37;40m")
+		break
 
 	else:
-		recieved = '-1'
+		print(received)
 
 	while received[-1:] == '\n':						#multiple lines of responses from server
 		received = s.recv(1024)
