@@ -84,19 +84,19 @@ def main():
 						break						
 
 				if flag == False:										#user not found in file
-					file = open("users/"+name.strip()+".txt","w+")		#create user file and append password and privilege
-					file.write(password.strip()+"\n3")
-					display("New Account Added : "+ name + '(' + password + ')', 0, log)
-					c.sendall('\033[1;32;40mAccount Successfully Created!\n\033[1;37;40m')
+					with open("users/"+name.strip()+".txt","w+") as file:		#create user file and append password and privilege
+						file.write(password.strip()+"\n3")
+						display("New Account Added : "+ name + '(' + password + ')', 0, log)
+						c.sendall('\033[1;32;40mAccount Successfully Created!\n\033[1;37;40m')
 
 			elif options == '2':								#sign in as voter or delegate
-				c.sendall("1) voter\n2) delegate")
+				c.sendall("\033[1;34;40m1) voter\n2) delegate\n\033[1;37;40m")
 				options = c.recv(1024)
 
-				c.sendall('Sign In\nName:')
+				c.sendall('\033[1;34;40mSign In\nName:\033[1;37;40m')
 				name = c.recv(1024)								#request and recieve sign in credentials
 
-				c.sendall('Password:')
+				c.sendall('\033[1;34;40mPassword:\033[1;37;40m')
 				password = c.recv(1024)
 
 				if options == '2':								#find directory of users or delegates
@@ -154,7 +154,6 @@ def main():
 			options = c.recv(1024)
 
 			if options == '1':			#sign out
-				file.close()
 				signed = ''
 		    
 			elif options == '2':		#request to see user table, but be signed in as administrator, else error message
@@ -172,22 +171,23 @@ def main():
 						options = c.recv(1024)
 
 						if options == '1':							#add candidate
-								c.sendall("ID:Surname:Given Name")
+								c.sendall("\033[1;34;40mID:Surname:Given Name\033[1;37;40m")
 								options = c.recv(1024)
 								information = options.split(':')	#client input eg. 10000:SURNAME:FIRSTNAME
+								print(len(information))
 
 								if len(information) != 3:
-									c.send('\033[1;31;40m)Invalid Candidate Information\033[1;37;40m')		#not enough candidate information
-									display('Bad Candidate information ' + options, 1, log)
+									c.sendall('\033[1;31;40mInvalid Candidate Information\033[1;37;40m')		#not enough candidate information
+									display('\033[1;31;40mBad Candidate information ' + options + '\033[1;37;40m', 1, log)
 								else:
-									delegate.candidates.append((information[-3], information[-2], information[-1]))		#append candidate information to delegate file.
-									c.sendall("Candidate Successfully Added")
+									delegate.candidates.append((information[-3], information[-2].upper(), information[-1].capitalize()))		#append candidate information to delegate file.
+									c.sendall("\033[1;32;40mCandidate Successfully Added\n\033[1;37;40m")
 
 						elif options == '2':											#remove candidate
 								for x in range(len(delegate.candidates)):
 									c.sendall(str(x)+') ' + delegate.candidates[x][1] + ' ' + delegate.candidates[x][2] + '\n')		#display to client all party candidates 
 
-								c.sendall("Select a Candidate to Remove:")
+								c.sendall("\033[1;34;40mSelect a Candidate to Remove:\033[1;37;40m")
 								options = c.recv(1024)
 
 								delegate.candidates.pop(int(options))	#remove selected candidate from party		
@@ -204,7 +204,7 @@ def main():
 							c.sendall(delegate.candidates[x][0] + ' ' +delegate.candidates[x][1] + ' ' + delegate.candidates[x][2] + '\n') 
 				
 				else:				#signed in as voter, select delegate
-					c.sendall("select a delegate using party acronym")
+					c.sendall("\033[1;34;40mselect a delegate using party acronym\033[1;37;40m")
 					options = c.recv(1024)
 
 					with open('users/delegates/'+options+'.txt') as delfile:		#open selected delegate file and display condidates
@@ -220,7 +220,7 @@ def main():
 			elif options == '9': 	#close the connection to the server
 				c.sendall("\033[1;31;40mExiting\033[1;37;40m\n")	#tell client to close connection with -1 message
 				c.sendall("-1")	
-				signed = '.'	#sign out								
+				signed = ''		#sign out								
 				exit = 1		#exit program
 				
 	log.close()					#close server log
